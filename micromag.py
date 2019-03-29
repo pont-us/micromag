@@ -3,6 +3,8 @@
 
 import re
 import numpy as np
+import matplotlib.pyplot as plt
+import argparse
 
 
 class HysteresisCurve:
@@ -13,7 +15,6 @@ class HysteresisCurve:
 
         self.params = {}
         param_regex = re.compile("^(.*)    +(.*)$")
-        # -45.74277E-06,+3.398127E-09,-45.74277E-06,+3.792786E-09
         loop_regex_part = r"[+-][0-9.]{8}E[+-]\d\d"
         loop_regex = \
             re.compile("({0}),({0}),({0}),({0})".format(loop_regex_part))
@@ -38,3 +39,24 @@ class HysteresisCurve:
                 loop_rows.append([])
 
         self.loops = list(map(lambda x: np.array(x).transpose(), loop_rows))
+
+    def plot(self):
+        mass = float(self.params["Mass"])
+        colors = ["blue", "black", "green"]
+        for part in 0, 1, 2:
+            plt.plot(self.loops[part][2], self.loops[part][3] / mass,
+                     color=colors[part])
+
+
+def main():
+    args = argparse.ArgumentParser()
+    args.add_argument("filename", type=str, nargs="+")
+    opts = args.parse_args()
+    curves = [HysteresisCurve(f) for f in opts.filename]
+    for curve in curves:
+        curve.plot()
+    plt.show()
+
+
+if __name__ == "__main__":
+    main()
